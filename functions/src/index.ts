@@ -38,6 +38,14 @@ export const createConversation = onCall(async (request) => {
       conversation_name: conversationName ?? "NALCO AI Assistant",
       properties: {
         enable_closed_captions: true,
+        // These three matter a lot on a plan with a low concurrent-call
+        // limit: without them, a crashed browser, closed tab, or failed
+        // connection leaves the conversation "active" on Tavus's side
+        // forever, permanently blocking every future Start Call on the
+        // kiosk until someone manually ends it via the API.
+        max_call_duration: 600, // hard cap: 10 min per session
+        participant_left_timeout: 30, // free up ~30s after the visitor leaves/disconnects
+        participant_absent_timeout: 60, // free up if nobody ever actually joins
       },
     }),
   });
