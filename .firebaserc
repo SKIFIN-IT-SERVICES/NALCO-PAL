@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "skifin-ccpro"
+  },
+  "targets": {
+    "skifin-ccpro": {
+      "hosting": {
+        "nalco-ai-assistant": [
+          "nalco-ai-assistant"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

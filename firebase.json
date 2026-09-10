@@ -1,0 +1,20 @@
+{
+  "hosting": {
+    "target": "nalco-ai-assistant",
+    "public": "frontend/dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "nalco-ai-assistant",
+      "runtime": "nodejs20"
+    }
+  ]
+}
