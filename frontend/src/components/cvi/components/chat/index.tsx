@@ -54,7 +54,8 @@ export const ChatButton = memo(() => {
 		<button
 			type="button"
 			onClick={toggle}
-			aria-pressed={isOpen}
+			aria-expanded={isOpen}
+			aria-controls="cvi-chat-panel"
 			aria-label={isOpen ? 'Close chat' : 'Open chat'}
 			className={`${styles.chatButton} ${isOpen ? styles.chatButtonActive : ''}`}
 		>
@@ -145,6 +146,7 @@ export const ChatPanel = memo(() => {
 
 	return (
 		<aside
+			id="cvi-chat-panel"
 			className={`${styles.panel} ${isOpen ? styles.panelOpen : ''}`}
 			aria-hidden={!isOpen}
 			inert={!isOpen}
