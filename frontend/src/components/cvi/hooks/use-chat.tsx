@@ -112,7 +112,15 @@ export function useChat(): UseChatReturn {
 
 	useObservableEvent<never>(
 		useCallback((event) => {
-			if (event.event_type === 'conversation.utterance') {
+			// Both carry the cumulative "speech so far" for the turn, keyed by
+			// the same inference_id+role — applying the streaming event too
+			// (not just the final one-shot `conversation.utterance`) is what
+			// makes the transcript fill in live, in step with the audio,
+			// instead of only appearing once a whole turn has finished.
+			if (
+				event.event_type === 'conversation.utterance' ||
+				event.event_type === 'conversation.utterance.streaming'
+			) {
 				dispatch({ type: 'utterance', event });
 			}
 		}, [])
