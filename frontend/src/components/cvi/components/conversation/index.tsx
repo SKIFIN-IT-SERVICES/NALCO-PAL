@@ -65,7 +65,9 @@ const SelfView = React.memo(() => (
 	</div>
 ));
 
-const MainVideo = React.memo(() => {
+const CONNECT_TIMEOUT_MS = 25000;
+
+const MainVideo = React.memo(({ onStuck }: { onStuck: () => void }) => {
 	const replicaIds = useReplicaIDs();
 	const localId = useLocalSessionId();
 	const videoState = useVideoTrack(replicaIds[0]);
@@ -80,6 +82,15 @@ const MainVideo = React.memo(() => {
 			setHasReplicaConnected(true);
 		}
 	}, [replicaId, videoState.state]);
+
+	// A kiosk left unattended for hours needs to recover on its own from a
+	// call that never actually connects (the exact "stuck on Connecting…"
+	// failure mode this app has hit before) — nobody is there to reload it.
+	useEffect(() => {
+		if (hasReplicaConnected) return;
+		const timer = setTimeout(onStuck, CONNECT_TIMEOUT_MS);
+		return () => clearTimeout(timer);
+	}, [hasReplicaConnected, onStuck]);
 
 	if (meetingState === 'left-meeting' || meetingState === 'error') {
 		return <LeavingState />;
@@ -227,7 +238,7 @@ export const Conversation = React.memo(({ onLeave, conversationUrl }: Conversati
 							)}
 
 							<div className={styles.mainVideoContainer}>
-								<MainVideo />
+								<MainVideo onStuck={handleLeave} />
 							</div>
 
 							<SelfView />

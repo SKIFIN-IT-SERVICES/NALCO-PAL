@@ -59,15 +59,25 @@ function App() {
     exitFullscreen();
     if (!conversation) return;
     const conversationId = conversation.conversationId;
-    setConversation(null);
     try {
       const endConversation = httpsCallable<{ conversationId: string }, { success: boolean }>(
         functions,
         "endConversation"
       );
-      await endConversation({ conversationId });
+      // Bounded wait: a hung network call should never delay getting back
+      // to a clean slate for the next customer.
+      await Promise.race([
+        endConversation({ conversationId }),
+        new Promise((resolve) => setTimeout(resolve, 5000)),
+      ]);
     } catch (err) {
       console.error(err);
+    } finally {
+      // Full reload rather than resetting React state: this is a kiosk
+      // running many customer sessions back-to-back over a long day, and a
+      // fresh page load guarantees a clean video-call object for the next
+      // person instead of reusing one that's been through many cycles.
+      window.location.reload();
     }
   }, [conversation, exitFullscreen]);
 
