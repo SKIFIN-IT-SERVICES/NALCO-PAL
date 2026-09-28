@@ -1,5 +1,58 @@
 # NALCO-PAL
 
+## Working from a new device
+
+Everything except secrets lives in this repo. To pick this project up
+somewhere new:
+
+```bash
+git clone https://github.com/SKIFIN-IT-SERVICES/NALCO-PAL.git
+cd NALCO-PAL
+npm --prefix frontend install
+npm --prefix functions install
+firebase login          # needs access to the skifin-ccpro Firebase project
+```
+
+Then recreate `functions/.env` (gitignored — never committed, so it does not
+come along with `git clone`). It needs exactly these four variables:
+
+```
+TAVUS_API_KEY=...              # from the Tavus dashboard
+TAVUS_PAL_ID=...                # p29cbd5433be as of this writing
+OTP_CODE=...                    # the current daily kiosk access code
+TAVUS_TOOL_HMAC_SECRET=...      # shared secret for HMAC-signed tool calls
+```
+
+The values themselves are not written down anywhere in the repo on purpose —
+copy them from the Tavus dashboard (API key, PAL ID) and from wherever you
+already have them recorded (`OTP_CODE`, `TAVUS_TOOL_HMAC_SECRET`), or
+transfer the existing `functions/.env` file directly between your own
+devices out of band (AirDrop, a password manager, etc.) rather than through
+Git.
+
+Live deployment: <https://nalco-ai-assistant.web.app> (Firebase Hosting,
+project `skifin-ccpro`). `firebase deploy --only hosting:nalco-ai-assistant`
+and `firebase deploy --only functions:nalco-ai-assistant` push from any
+machine once the above is set up — nothing about deployment is tied to one
+computer.
+
+**Note for whoever (human or Claude) picks this up next:** this file and the
+sections below describe the code and how to run it, not the day-to-day
+project history — for full context on what's been built, why, and what's
+still open, see the engagement plan artifact referenced in the project's
+Claude conversation history, or ask the person who ran the last session.
+
+### Currently open / blocked
+
+- The prize quiz's system-prompt instructions (the multi-question flow) are
+  written and ready, but the last attempt to push them to the Tavus PAL hit
+  a `409 maker_changes` conflict — someone has unpublished edits sitting in
+  the Tavus dashboard's PAL Maker. Publish or discard those there, then the
+  prompt patch can be retried. Until then, the PAL's own understanding of
+  the quiz still reflects the older single-question wording, even though
+  the backend already enforces the new 5-questions/1-attempt-each behaviour
+  correctly regardless of what the prompt says.
+
 ## Daily access code gate
 
 The kiosk sits behind a PIN screen (`frontend/src/components/pin-gate`) that
