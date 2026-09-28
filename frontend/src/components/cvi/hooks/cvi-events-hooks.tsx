@@ -234,13 +234,29 @@ type AppMessageSensitivity = {
 	};
 };
 
+// Sent back in response to a `conversation.tool_call` app-message — required
+// for every app-message-delivered tool (e.g. celebrate_win), or the PAL is
+// left waiting on a result that never arrives. `tool_call_id` must be
+// copied verbatim from the incoming tool_call event.
+type AppMessageToolResult = {
+	message_type: 'conversation';
+	event_type: 'conversation.tool_result';
+	conversation_id: string;
+	properties: {
+		tool_call_id: string;
+		output: string | Record<string, unknown>;
+		status: 'success' | 'error';
+	};
+};
+
 type SendAppMessageProps =
 	| AppMessageEcho
 	| AppMessageRespond
 	| AppMessageInterrupt
 	| AppMessageOverwriteLlmContext
 	| AppMessageAppendLlmContext
-	| AppMessageSensitivity;
+	| AppMessageSensitivity
+	| AppMessageToolResult;
 
 export function useSendAppMessage(): (message: SendAppMessageProps) => void {
 	const sendAppMessage = useAppMessage();

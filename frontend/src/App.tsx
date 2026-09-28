@@ -3,6 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { functions } from "./firebase";
 import { CVIProvider } from "./components/cvi/components/cvi-provider";
 import { Conversation } from "./components/cvi/components/conversation";
+import { PinGate } from "./components/pin-gate";
 import "./App.css";
 
 type CreateConversationResult = {
@@ -82,43 +83,45 @@ function App() {
   }, [conversation, exitFullscreen]);
 
   return (
-    // One persistent call object for the app's lifetime. Recreating it per
-    // call (via a React key) was tried and reverted: the old object's async
-    // teardown could still be holding the camera/mic when the new one tried
-    // to acquire them, silently hanging the next join on "Connecting…".
-    <CVIProvider>
-      <div className="app-shell">
-        {!conversation && (
-          <header className="app-header">
-            <span className="app-brand">NALCO</span>
-            <span className="app-brand-sub">AI Assistant · एआई सहायक</span>
-          </header>
-        )}
-
-        <main className={`app-main${conversation ? " app-main--call" : ""}`}>
-          {!conversation ? (
-            <div className="start-screen">
-              <h1>Talk to the NALCO AI Assistant</h1>
-              <p>Ask questions in Hindi or English and get a live video response.</p>
-              {error && <p className="error-text">{error}</p>}
-              <button
-                type="button"
-                className="start-button"
-                onClick={startCall}
-                disabled={isStarting}
-              >
-                {isStarting ? "Starting…" : "Start Call"}
-              </button>
-            </div>
-          ) : (
-            <Conversation
-              conversationUrl={conversation.conversationUrl}
-              onLeave={endCall}
-            />
+    <PinGate>
+      {/* One persistent call object for the app's lifetime. Recreating it per
+      call (via a React key) was tried and reverted: the old object's async
+      teardown could still be holding the camera/mic when the new one tried
+      to acquire them, silently hanging the next join on "Connecting…". */}
+      <CVIProvider>
+        <div className="app-shell">
+          {!conversation && (
+            <header className="app-header">
+              <span className="app-brand">NALCO</span>
+              <span className="app-brand-sub">AI Assistant · एआई सहायक</span>
+            </header>
           )}
-        </main>
-      </div>
-    </CVIProvider>
+
+          <main className={`app-main${conversation ? " app-main--call" : ""}`}>
+            {!conversation ? (
+              <div className="start-screen">
+                <h1>Talk to the NALCO AI Assistant</h1>
+                <p>Ask questions in Hindi or English and get a live video response.</p>
+                {error && <p className="error-text">{error}</p>}
+                <button
+                  type="button"
+                  className="start-button"
+                  onClick={startCall}
+                  disabled={isStarting}
+                >
+                  {isStarting ? "Starting…" : "Start Call"}
+                </button>
+              </div>
+            ) : (
+              <Conversation
+                conversationUrl={conversation.conversationUrl}
+                onLeave={endCall}
+              />
+            )}
+          </main>
+        </div>
+      </CVIProvider>
+    </PinGate>
   );
 }
 

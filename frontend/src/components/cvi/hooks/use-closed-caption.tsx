@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useObservableEvent } from './cvi-events-hooks';
+import { stripSpeechControlTags } from './strip-speech-control-tags';
 
 const CAPTION_CLEAR_DELAY_MS = 2000;
 
@@ -36,7 +37,31 @@ export const useClosedCaption = (): ClosedCaption | null => {
 					// The duplicate `pal`/`replica` frames carry the same text, so
 					// showing whichever arrives is an idempotent caption update.
 					if (role === 'user' || role === 'pal' || role === 'replica') {
-						update({ role, text: speech }, final ?? false);
+						update({ role, text: stripSpeechControlTags(speech ?? '') }, final ?? false);
+					}
+				}
+
+				// The PAL's audio track and its transcript text arrive over two
+				// separate channels (media track vs. data-channel app-message),
+				// and the text has been observed lagging audibly behind the
+				// audio start. `started_speaking` fires the instant the audio
+				// begins, so use it to put *something* on screen immediately —
+				// the very next `utterance.streaming` event overwrites it with
+				// the real text within the same turn.
+				if (event.event_type === 'conversation.started_speaking') {
+					const { role } = event.properties;
+					if (role === 'pal' || role === 'replica') {
+						setCaption((prev) => (prev?.text ? prev : { role, text: '…' }));
+					}
+				}
+
+				// If the PAL finished speaking without any transcript ever
+				// arriving for that turn, drop the placeholder instead of
+				// leaving a bare "…" on screen.
+				if (event.event_type === 'conversation.stopped_speaking') {
+					const { role } = event.properties;
+					if (role === 'pal' || role === 'replica') {
+						setCaption((prev) => (prev?.text === '…' ? null : prev));
 					}
 				}
 			},

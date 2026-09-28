@@ -16,5 +16,10 @@
       "codebase": "nalco-ai-assistant",
       "runtime": "nodejs20"
     }
-  ]
+  ],
+  "firestore": {
+    "database": "(default)",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
 }

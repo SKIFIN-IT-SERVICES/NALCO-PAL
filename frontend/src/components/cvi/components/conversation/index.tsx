@@ -1,21 +1,13 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import {
-	DailyAudioTrack,
-	DailyVideo,
-	useDevices,
-	useLocalSessionId,
-	useMeetingState,
-	useScreenVideoTrack,
-	useVideoTrack,
-} from '@daily-co/daily-react';
-import { MicSelectBtn, CameraSelectBtn, ScreenShareButton } from '../device-select';
+import { DailyAudioTrack, DailyVideo, useDevices, useMeetingState, useVideoTrack } from '@daily-co/daily-react';
+import { MicSelectBtn } from '../device-select';
 import { ClosedCaptions, ClosedCaptionsButton, ClosedCaptionsProvider } from '../closed-captions';
 import { ChatButton, ChatPanel, ChatProvider } from '../chat';
 import { ConnectingState, LeavingState } from '../conversation-status';
-import { useLocalScreenshare } from '../../hooks/use-local-screenshare';
+import { VisitorSessionDebug } from '../visitor-session-debug';
+import { QuizCelebration } from '../quiz-celebration';
 import { useReplicaIDs } from '../../hooks/use-replica-ids';
 import { useCVICall } from '../../hooks/use-cvi-call';
-import { AudioWave } from '../audio-wave';
 
 import styles from './conversation.module.css';
 
@@ -24,56 +16,12 @@ interface ConversationProps {
 	conversationUrl: string;
 }
 
-const VideoPreview = React.memo(({ id }: { id: string }) => {
-	const videoState = useVideoTrack(id);
-
-	return (
-		<div
-			className={`${styles.previewVideoContainer} ${videoState.isOff ? styles.previewVideoContainerHidden : ''}`}
-		>
-			<DailyVideo
-				automirror
-				sessionId={id}
-				type="video"
-				fit="cover"
-				className={`${styles.previewVideo} ${videoState.isOff ? styles.previewVideoHidden : ''}`}
-			/>
-			<div className={styles.audioWaveContainer}>
-				<AudioWave id={id} />
-			</div>
-		</div>
-	);
-});
-
-const PreviewVideos = React.memo(() => {
-	const localId = useLocalSessionId();
-	const { isScreenSharing } = useLocalScreenshare();
-	const replicaIds = useReplicaIDs();
-	const replicaId = replicaIds[0];
-
-	return (
-		<>
-			{isScreenSharing && <VideoPreview id={replicaId} />}
-			<VideoPreview id={localId} />
-		</>
-	);
-});
-
-const SelfView = React.memo(() => (
-	<div className={styles.selfViewContainer}>
-		<PreviewVideos />
-	</div>
-));
-
 const CONNECT_TIMEOUT_MS = 25000;
 
 const MainVideo = React.memo(({ onStuck }: { onStuck: () => void }) => {
 	const replicaIds = useReplicaIDs();
-	const localId = useLocalSessionId();
 	const videoState = useVideoTrack(replicaIds[0]);
-	const screenVideoState = useScreenVideoTrack(localId);
 	const meetingState = useMeetingState();
-	const isScreenSharing = !screenVideoState.isOff;
 	const replicaId = replicaIds[0];
 	const [hasReplicaConnected, setHasReplicaConnected] = useState(false);
 
@@ -105,16 +53,12 @@ const MainVideo = React.memo(({ onStuck }: { onStuck: () => void }) => {
 	}
 
 	return (
-		<div
-			className={`${styles.mainVideoContainer} ${isScreenSharing ? styles.mainVideoContainerScreenSharing : ''}`}
-		>
+		<div className={styles.mainVideoContainer}>
 			<DailyVideo
 				automirror
-				sessionId={isScreenSharing ? localId : replicaId}
-				type={isScreenSharing ? 'screenVideo' : 'video'}
-				className={`${styles.mainVideo}
-				${isScreenSharing ? styles.mainVideoScreenSharing : ''}
-				${videoState.isOff ? styles.mainVideoHidden : ''}`}
+				sessionId={replicaId}
+				type="video"
+				className={`${styles.mainVideo} ${videoState.isOff ? styles.mainVideoHidden : ''}`}
 			/>
 			<DailyAudioTrack sessionId={replicaId} />
 		</div>
@@ -174,7 +118,6 @@ const MoreMenu = memo(() => {
 			</button>
 			{isOpen && (
 				<div className={styles.morePopover} role="menu">
-					<ScreenShareButton />
 					<ClosedCaptionsButton />
 				</div>
 			)}
@@ -232,7 +175,7 @@ export const Conversation = React.memo(({ onLeave, conversationUrl }: Conversati
 							{hasMicError && (
 								<div className={styles.errorContainer}>
 									<p>
-										Camera or microphone access denied. Please check your settings and try again.
+										Microphone access denied. Please check your settings and try again.
 									</p>
 								</div>
 							)}
@@ -241,9 +184,13 @@ export const Conversation = React.memo(({ onLeave, conversationUrl }: Conversati
 								<MainVideo onStuck={handleLeave} />
 							</div>
 
-							<SelfView />
-
 							<ClosedCaptions />
+
+							{/* TEMPORARY testing aid — see visitor-session-debug/index.tsx
+							for why this must come off before the kiosk goes live. */}
+							<VisitorSessionDebug />
+
+							<QuizCelebration />
 						</div>
 
 						<ChatPanel />
@@ -254,7 +201,6 @@ export const Conversation = React.memo(({ onLeave, conversationUrl }: Conversati
 						>
 							<div className={styles.footerControls}>
 								<MicSelectBtn />
-								<CameraSelectBtn />
 								<MoreMenu />
 								<ChatButton />
 								<button type="button" className={styles.leaveButton} onClick={handleLeave}>

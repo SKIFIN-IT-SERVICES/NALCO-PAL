@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useReducer } from 'react';
 import { useObservableEvent, useSendAppMessage } from './cvi-events-hooks';
+import { stripSpeechControlTags } from './strip-speech-control-tags';
 
 // `pal` is the current name for the Tavus side; `replica` is the legacy
 // duplicate of it. Compare against both when branching on the speaker.
@@ -31,7 +32,7 @@ export function makeMessageId(inferenceId: string, role: ChatRole): string {
 }
 
 export function applyUtterance(prev: ChatMessage[], event: UtteranceLike): ChatMessage[] {
-	const speech = event.properties.speech;
+	const speech = stripSpeechControlTags(event.properties.speech ?? '');
 	const role = event.properties.role;
 	if (!speech || !isChatRole(role)) {
 		return prev;

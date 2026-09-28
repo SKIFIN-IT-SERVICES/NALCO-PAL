@@ -1,4 +1,22 @@
+import { initializeApp } from "firebase-admin/app";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+
+initializeApp();
+
+export { checkOtpStatus, redeemOtp } from "./otp-gate";
+export {
+  refreshAluminiumPriceSchedule,
+  refreshAluminiumPriceManual,
+  aluminiumPriceTool,
+  aluminiumPriceDocument,
+  registerAluminiumKnowledgeDocument,
+} from "./metal-price";
+export {
+  seedQuizQuestions,
+  startQuizTool,
+  submitQuizAnswerTool,
+  redeemPrizeCode,
+} from "./quiz";
 
 const TAVUS_BASE_URL = "https://tavusapi.com/v2/conversations";
 
@@ -36,6 +54,10 @@ export const createConversation = onCall(async (request) => {
     body: JSON.stringify({
       pal_id: getTavusPalId(),
       conversation_name: conversationName ?? "NALCO AI Assistant",
+      // Keeps the daily-refreshed aluminium price document (see
+      // functions/src/metal-price.ts) in the PAL's Knowledge Base context
+      // for every conversation, without needing to hardcode a document_id.
+      document_tags: ["aluminium-price"],
       properties: {
         enable_closed_captions: true,
         // These three matter a lot on a plan with a low concurrent-call

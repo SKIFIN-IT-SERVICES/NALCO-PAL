@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // otpState is written and read exclusively by the redeemOtp/checkOtpStatus
+    // Cloud Functions via the Admin SDK, which bypasses these rules entirely.
+    // No client (authenticated or not) has any reason to touch it directly.
+    match /otpState/{date} {
+      allow read, write: if false;
+    }
+
+    // Default deny for anything else — this project has no other
+    // client-accessed Firestore data today.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

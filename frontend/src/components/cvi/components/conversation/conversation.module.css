@@ -159,12 +159,6 @@
 	position: relative;
 }
 
-.mainVideoContainerScreenSharing {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
 .mainVideo {
 	position: absolute;
 	inset: 0;
@@ -175,73 +169,8 @@
 	transition: all 0.3s ease;
 }
 
-.mainVideoScreenSharing {
-	object-fit: contain !important;
-}
-
 .mainVideoHidden {
 	display: none;
-}
-
-/* PreviewVideo styles */
-.previewVideoContainer {
-	position: relative;
-	background: rgba(2, 6, 23, 0.3);
-	aspect-ratio: 1/1;
-	width: 6rem;
-	border-radius: 0.75rem;
-	overflow: hidden;
-	z-index: 10;
-}
-
-@container conversation (min-width: 768px) {
-	.previewVideoContainer {
-		width: 7rem;
-	}
-}
-
-@container conversation (min-width: 1024px) {
-	.previewVideoContainer {
-		width: 8rem;
-	}
-}
-
-.previewVideoContainerHidden {
-	background: transparent;
-	display: none;
-}
-
-.previewVideo {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-.previewVideoHidden {
-	display: none;
-}
-
-/* Main video container */
-.mainVideoContainer {
-	width: 100%;
-	height: 100%;
-}
-
-/* Self view container — pinned to top-right so captions own the bottom band. */
-.selfViewContainer {
-	position: absolute;
-	top: 1rem;
-	left: 1rem;
-	display: flex;
-	align-items: flex-end;
-	flex-direction: column;
-	gap: 0.5rem;
-	z-index: 15;
-}
-
-.selfViewContainer video {
-	object-position: center center;
-	object-fit: cover;
 }
 
 /* Waiting message container */
@@ -270,9 +199,3 @@
 	}
 }
 /* End of Selection */
-
-.audioWaveContainer {
-	position: absolute;
-	bottom: 0.5rem;
-	right: 0.5rem;
-}
